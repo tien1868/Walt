@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Score Unit{% endblock %}
+
+{% block content %}
+<h1>Score a Storage Unit</h1>
+<p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+    Upload a photo of a storage unit to get an estimated value range based on learned patterns.
+</p>
+
+<div class="card">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="upload-area">
+            <p>Select a unit photo</p>
+            <input type="file" name="photo" accept="image/*">
+            <br>
+            <button type="submit" class="btn">Analyze &amp; Score</button>
+        </div>
+    </form>
+</div>
+
+{% if error %}
+<div class="error-box">{{ error }}</div>
+{% endif %}
+
+{% if result %}
+<div class="result-box">
+    <h2>Predicted Value</h2>
+    {% if result.prediction %}
+    <div class="stats-grid" style="margin-top: 1rem;">
+        <div class="stat-card">
+            <div class="value">${{ '%.2f' | format(result.prediction.value_range_low) }}</div>
+            <div class="label">Low Estimate</div>
+        </div>
+        <div class="stat-card">
+            <div class="value" style="color: var(--success);">${{ '%.2f' | format(result.prediction.predicted_value) }}</div>
+            <div class="label">Predicted Value</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">${{ '%.2f' | format(result.prediction.value_range_high) }}</div>
+            <div class="label">High Estimate</div>
+        </div>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">
+        No trained model available. Run <code>python vault.py train</code> first to enable predictions.
+    </p>
+    {% endif %}
+</div>
+
+{% if result.features %}
+<div class="card">
+    <h3>Detected Features</h3>
+
+    <div style="margin-bottom: 1rem;">
+        <strong>Condition:</strong> {{ result.features.condition_assessment | default('—') }}
+        &nbsp;|&nbsp;
+        <strong>Fill:</strong> {{ result.features.fill_percentage | default(0) }}%
+        &nbsp;|&nbsp;
+        <strong>Packing Quality:</strong> {{ result.features.packing_quality_score | default(0) }}/10
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+        <strong>Items Detected:</strong><br>
+        {% for cat in result.features.item_categories | default([]) %}
+            <span class="tag">{{ cat }}</span>
+        {% endfor %}
+    </div>
+
+    {% if result.features.high_value_indicators %}
+    <div style="margin-bottom: 1rem;">
+        <strong>High Value Indicators:</strong><br>
+        {% for hv in result.features.high_value_indicators %}
+            <span class="tag" style="background:rgba(0,184,148,0.15); color:var(--success);">{{ hv }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom: 1rem;">
+        <strong>Clothing:</strong>
+        {% if result.features.clothing_visible %}
+            Visible ({{ result.features.clothing_volume_estimate | default('unknown') }})
+        {% else %}
+            Not visible
+        {% endif %}
+    </div>
+
+    {% if result.features.overall_notes %}
+    <div>
+        <strong>Notes:</strong> {{ result.features.overall_notes }}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

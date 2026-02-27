@@ -1,0 +1,18 @@
+# Environment
+.env
+venv/
+__pycache__/
+*.pyc
+
+# Data
+data/images/
+data/vault.db
+data/trained_model.pkl
+data/reports/*.json
+
+# Logs
+logs/*.log
+
+# IDE
+.vscode/
+.idea/

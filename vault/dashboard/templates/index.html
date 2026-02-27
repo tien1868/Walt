@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Storage Auction Intelligence</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="value">{{ stats.total_auctions }}</div>
+        <div class="label">Total Auctions</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ stats.analyzed_auctions }}</div>
+        <div class="label">Analyzed</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">${{ "%.2f"|format(stats.avg_bid) }}</div>
+        <div class="label">Average Bid</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">${{ "%.2f"|format(stats.max_bid) }}</div>
+        <div class="label">Highest Bid</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ stats.total_photos }}</div>
+        <div class="label">Photos Collected</div>
+    </div>
+</div>
+
+{% if model_run %}
+<div class="card">
+    <h3>Latest Model</h3>
+    <p>Trained on <strong>{{ model_run.num_samples }}</strong> samples —
+       R² accuracy: <strong>{{ model_run.accuracy }}</strong></p>
+    <p style="color: var(--text-muted); font-size: 0.85rem;">{{ model_run.notes }}</p>
+</div>
+{% endif %}
+
+<div class="card">
+    <h3>Recent Auctions</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Facility</th>
+                <th>Location</th>
+                <th>Size</th>
+                <th>Bid</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in recent %}
+            <tr>
+                <td><a href="/auction/{{ a.auction_id }}">{{ a.facility_name or 'Unknown' }}</a></td>
+                <td>{{ a.location or '—' }}</td>
+                <td>{{ a.unit_size or '—' }}</td>
+                <td class="bid">{{ '$%.2f'|format(a.final_bid) if a.final_bid else '—' }}</td>
+                <td>
+                    <span class="badge badge-{{ a.status }}">{{ a.status }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="margin-top: 1rem;"><a href="/auctions" class="btn">View All Auctions</a></p>
+</div>
+{% endblock %}

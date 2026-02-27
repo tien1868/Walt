@@ -1,0 +1,46 @@
+# VAULT - Storage Auction Intelligence System Configuration
+
+scraping:
+  base_url: "https://www.storagetreasures.com"
+  listings_path: "/auctions"
+  delay_min: 2
+  delay_max: 5
+  max_retries: 3
+  retry_backoff: 2
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  respect_robots_txt: true
+  max_pages: 50
+  batch_size: 20
+
+storage:
+  database_path: "data/vault.db"
+  images_dir: "data/images"
+  reports_dir: "data/reports"
+  max_image_width: 800
+  image_quality: 85
+  image_format: "JPEG"
+
+analysis:
+  model: "gemini-2.0-flash"
+  max_tokens: 4096
+  temperature: 0.1
+  batch_size: 10
+  rate_limit_delay: 1.0
+
+training:
+  test_split: 0.2
+  random_state: 42
+  min_samples: 50
+  top_quartile_threshold: 0.75
+  model_path: "data/trained_model.pkl"
+
+dashboard:
+  host: "0.0.0.0"
+  port: 5000
+  debug: true
+  items_per_page: 20
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+  file: "logs/vault.log"

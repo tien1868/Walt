@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Auction {{ auction.auction_id }}{% endblock %}
+
+{% block content %}
+<h1>{{ auction.facility_name or 'Auction' }} — {{ auction.auction_id }}</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="value">{{ auction.unit_size or '—' }}</div>
+        <div class="label">Unit Size</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">${{ '%.2f'|format(auction.final_bid) if auction.final_bid else '—' }}</div>
+        <div class="label">Final Bid</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ auction.num_photos }}</div>
+        <div class="label">Photos</div>
+    </div>
+    <div class="stat-card">
+        <div class="value"><span class="badge badge-{{ auction.status }}">{{ auction.status }}</span></div>
+        <div class="label">Status</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Details</h3>
+    <table>
+        <tr><th>Location</th><td>{{ auction.location or '—' }}</td></tr>
+        <tr><th>End Date</th><td>{{ auction.auction_end_date or '—' }}</td></tr>
+        <tr><th>Scraped</th><td>{{ auction.scraped_at }}</td></tr>
+        <tr><th>Updated</th><td>{{ auction.updated_at }}</td></tr>
+    </table>
+</div>
+
+{% if image_files %}
+<div class="card">
+    <h3>Unit Photos</h3>
+    <div class="photo-grid">
+        {% for img in image_files %}
+        <img src="/static/../../data/images/{{ auction.auction_id }}/{{ img.name }}" alt="Unit photo {{ loop.index }}">
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if features %}
+<div class="card">
+    <h3>Vision Analysis</h3>
+
+    {% if features.parsed %}
+    {% set p = features.parsed %}
+
+    <div style="margin-bottom: 1rem;">
+        <strong>Condition:</strong> {{ p.condition_assessment | default('—') }}
+        &nbsp;|&nbsp;
+        <strong>Fill:</strong> {{ p.fill_percentage | default(0) }}%
+        &nbsp;|&nbsp;
+        <strong>Packing Quality:</strong> {{ p.packing_quality_score | default(0) }}/10
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+        <strong>Item Categories:</strong><br>
+        {% for cat in p.item_categories | default([]) %}
+            <span class="tag">{{ cat }}</span>
+        {% endfor %}
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+        <strong>Box Types:</strong><br>
+        {% for bt in p.box_types | default([]) %}
+            <span class="tag">{{ bt }}</span>
+        {% endfor %}
+    </div>
+
+    {% if p.brand_names %}
+    <div style="margin-bottom: 1rem;">
+        <strong>Brand Names:</strong><br>
+        {% for b in p.brand_names %}
+            <span class="tag">{{ b }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if p.high_value_indicators %}
+    <div style="margin-bottom: 1rem;">
+        <strong>High Value Indicators:</strong><br>
+        {% for hv in p.high_value_indicators %}
+            <span class="tag" style="background:rgba(0,184,148,0.15); color:var(--success);">{{ hv }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom: 1rem;">
+        <strong>Clothing:</strong>
+        {% if p.clothing_visible %}
+            Visible ({{ p.clothing_volume_estimate | default('unknown') }})
+        {% else %}
+            Not visible
+        {% endif %}
+    </div>
+
+    {% if p.overall_notes %}
+    <div style="margin-bottom: 1rem;">
+        <strong>Notes:</strong> {{ p.overall_notes }}
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+{% else %}
+<div class="card">
+    <h3>Vision Analysis</h3>
+    <p style="color: var(--text-muted);">Not yet analyzed. Run <code>python vault.py analyze</code> to process.</p>
+</div>
+{% endif %}
+{% endblock %}

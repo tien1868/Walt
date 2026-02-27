@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Insights{% endblock %}
+
+{% block content %}
+<h1>Auction Insights</h1>
+
+{% if not report %}
+<div class="card">
+    <p style="color: var(--text-muted);">
+        No report available yet. Run <code>python vault.py train</code> to generate insights.
+    </p>
+</div>
+{% else %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="value">{{ report.dataset_size }}</div>
+        <div class="label">Training Samples</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ report.model_accuracy.r2_score }}</div>
+        <div class="label">R² Score</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">${{ report.model_accuracy.mean_absolute_error }}</div>
+        <div class="label">Mean Abs Error</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">${{ report.avg_bid_overall }}</div>
+        <div class="label">Avg Bid</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Feature Importance — What Drives High Bids</h3>
+    <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        Features ranked by how strongly they predict auction prices.
+    </p>
+
+    {% set max_imp = report.top_indicators[0].importance if report.top_indicators else 1 %}
+    {% for feat in report.top_indicators %}
+    <div class="feature-bar">
+        <div class="name">{{ feat.feature | replace('cat_', '') | replace('box_', '') | replace('_', ' ') | title }}</div>
+        <div class="bar">
+            <div class="fill" style="width: {{ (feat.importance / max_imp * 100) | round }}%"></div>
+        </div>
+        <div class="val">{{ '%.3f' | format(feat.importance) }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h3>Average Bid by Feature</h3>
+    <table>
+        <thead>
+            <tr><th>Feature</th><th>Average Bid</th></tr>
+        </thead>
+        <tbody>
+            {% for key, val in report.avg_bid_by_feature.items() | sort(attribute='1', reverse=true) %}
+            <tr>
+                <td>{{ key | replace('_', ' ') | title }}</td>
+                <td class="bid">${{ '%.2f' | format(val) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if model_run %}
+<div class="card">
+    <h3>Model Training History</h3>
+    <table>
+        <tr><th>Date</th><td>{{ model_run.run_date }}</td></tr>
+        <tr><th>Samples</th><td>{{ model_run.num_samples }}</td></tr>
+        <tr><th>R²</th><td>{{ model_run.accuracy }}</td></tr>
+        <tr><th>Notes</th><td>{{ model_run.notes }}</td></tr>
+    </table>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

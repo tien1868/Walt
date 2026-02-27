@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Auctions{% endblock %}
+
+{% block content %}
+<h1>Auctions</h1>
+
+<div style="margin-bottom: 1rem;">
+    <a href="/auctions" class="btn" style="{% if not status %}opacity:0.6{% endif %}">All</a>
+    <a href="/auctions?status=active" class="btn" style="{% if status != 'active' %}opacity:0.6{% endif %}">Active</a>
+    <a href="/auctions?status=closed" class="btn" style="{% if status != 'closed' %}opacity:0.6{% endif %}">Closed</a>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Facility</th>
+                <th>Location</th>
+                <th>Size</th>
+                <th>Photos</th>
+                <th>Bid</th>
+                <th>End Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in auctions %}
+            <tr>
+                <td><a href="/auction/{{ a.auction_id }}">{{ a.auction_id }}</a></td>
+                <td>{{ a.facility_name or '—' }}</td>
+                <td>{{ a.location or '—' }}</td>
+                <td>{{ a.unit_size or '—' }}</td>
+                <td>{{ a.num_photos }}</td>
+                <td class="bid">{{ '$%.2f'|format(a.final_bid) if a.final_bid else '—' }}</td>
+                <td>{{ a.auction_end_date or '—' }}</td>
+                <td><span class="badge badge-{{ a.status }}">{{ a.status }}</span></td>
+            </tr>
+            {% endfor %}
+            {% if not auctions %}
+            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">No auctions found. Run the scraper first.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+        <a href="/auctions?page={{ page - 1 }}{% if status %}&status={{ status }}{% endif %}">Prev</a>
+    {% endif %}
+
+    {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+            <span class="current">{{ p }}</span>
+        {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+            <a href="/auctions?page={{ p }}{% if status %}&status={{ status }}{% endif %}">{{ p }}</a>
+        {% elif p == 4 or p == total_pages - 3 %}
+            <span>...</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if page < total_pages %}
+        <a href="/auctions?page={{ page + 1 }}{% if status %}&status={{ status }}{% endif %}">Next</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
