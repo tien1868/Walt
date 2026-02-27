@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estate Sale Arbitrage Scanner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;padding:16px;max-width:1200px;margin:0 auto}
+h1{font-size:1.5rem;color:#f8fafc;margin-bottom:4px}
+.subtitle{color:#94a3b8;font-size:.85rem;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:#1e293b;border-radius:10px;padding:16px;text-align:center}
+.stat-value{font-size:1.8rem;font-weight:700;color:#22c55e}
+.stat-label{font-size:.75rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.filters{margin-bottom:16px}
+.filters-label{font-size:.75rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filter-btn{background:#1e293b;border:1px solid #334155;color:#e2e8f0;padding:6px 14px;border-radius:9999px;font-size:.8rem;cursor:pointer;transition:all .15s}
+.filter-btn:hover{background:#334155;border-color:#475569}
+.filter-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff}
+.filter-btn .count{opacity:.6;font-size:.7rem;margin-left:2px}
+.search-box{background:#1e293b;border:1px solid #334155;color:#e2e8f0;padding:8px 14px;border-radius:8px;font-size:.85rem;width:100%;max-width:300px;outline:none;transition:border .15s}
+.search-box:focus{border-color:#3b82f6}
+.search-box::placeholder{color:#64748b}
+.filter-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;margin-bottom:16px}
+.filter-row .filter-bar{flex:1}
+table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:10px;overflow:hidden}
+thead{background:#334155}
+th{padding:12px 14px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;font-weight:600}
+td{padding:12px 14px;border-top:1px solid #334155;font-size:.9rem}
+.main-row{cursor:pointer;transition:background .15s}
+.main-row:hover{background:#334155}
+.rank{color:#64748b;font-weight:700;width:40px}
+.item-name{font-weight:600;color:#f8fafc}
+.item-type{color:#94a3b8;font-size:.8rem;margin:2px 0 4px}
+.price{font-weight:700;color:#22c55e;font-size:1.05rem;white-space:nowrap}
+.samples{color:#94a3b8;text-align:center}
+a{color:#38bdf8;text-decoration:none}
+a:hover{text-decoration:underline}
+.badge{display:inline-block;padding:2px 8px;border-radius:9999px;font-size:.7rem;font-weight:600;color:#fff}
+.cat-badge{font-size:.65rem;opacity:.9}
+.detail{padding:8px 0;color:#cbd5e1;font-size:.85rem;line-height:1.7}
+.detail strong{color:#f8fafc}
+.detail-row td{background:#0f172a;padding:4px 14px 12px 54px}
+.no-results{text-align:center;padding:40px;color:#64748b;font-size:.9rem}
+.footer{text-align:center;color:#475569;font-size:.75rem;margin-top:20px;padding:10px}
+@media(max-width:640px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  th:nth-child(5),td:nth-child(5){display:none}
+  td{padding:10px 8px;font-size:.82rem}
+  .detail-row td{padding-left:8px}
+  .filter-row{flex-direction:column}
+  .search-box{max-width:100%}
+}
+</style>
+</head>
+<body>
+<h1>Estate Sale Arbitrage Scanner</h1>
+<p class="subtitle">Scan generated February 27, 2026 at 09:15 AM</p>
+
+<div class="stats">
+  <div class="stat"><div class="stat-value">50</div><div class="stat-label">Sales Scanned</div></div>
+  <div class="stat"><div class="stat-value">42</div><div class="stat-label">With Matches</div></div>
+  <div class="stat"><div class="stat-value" style="color:#d946ef">164</div><div class="stat-label">AI Vision Finds</div></div>
+  <div class="stat"><div class="stat-value">12</div><div class="stat-label">Opportunities</div></div>
+</div>
+
+<div class="filter-row">
+  <div>
+    <div class="filters-label">Filter by category</div>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-cat="all" onclick="filterCat(this)">All <span class="count">12</span></button>
+      <button class="filter-btn" data-cat="Sports &amp; Outdoors" onclick="filterCat(this)">Sports &amp; Outdoors <span class="count">2</span></button>
+      <button class="filter-btn" data-cat="Collectibles" onclick="filterCat(this)">Collectibles <span class="count">2</span></button>
+      <button class="filter-btn" data-cat="Jewelry &amp; Watches" onclick="filterCat(this)">Jewelry &amp; Watches <span class="count">2</span></button>
+      <button class="filter-btn" data-cat="Clothing &amp; Fashion" onclick="filterCat(this)">Clothing &amp; Fashion <span class="count">2</span></button>
+      <button class="filter-btn" data-cat="Home &amp; Kitchen" onclick="filterCat(this)">Home &amp; Kitchen <span class="count">1</span></button>
+      <button class="filter-btn" data-cat="Art &amp; Decor" onclick="filterCat(this)">Art &amp; Decor <span class="count">1</span></button>
+      <button class="filter-btn" data-cat="Vintage &amp; Antiques" onclick="filterCat(this)">Vintage &amp; Antiques <span class="count">1</span></button>
+      <button class="filter-btn" data-cat="Electronics" onclick="filterCat(this)">Electronics <span class="count">1</span></button>
+    </div>
+  </div>
+  <div>
+    <div class="filters-label">Search</div>
+    <input type="text" class="search-box" placeholder="Search items, brands, locations..." oninput="searchFilter(this.value)">
+  </div>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Item</th>
+  <th>Location</th>
+  <th>eBay Median</th>
+  <th>Samples</th>
+  <th>Sale</th>
+</tr>
+</thead>
+<tbody id="results">
+
+        <tr class="main-row" data-cat="Sports &amp; Outdoors" onclick="toggleDetail(this)">
+            <td class="rank">1</td>
+            <td>
+                <div class="item-name">R.O. Miller</div>
+                <div class="item-type">vintage western saddle</div>
+                <span class="badge" style="background:#d946ef">AI Vision</span> <span class="badge cat-badge" style="background:#22c55e">Sports &amp; Outdoors</span>
+            </td>
+            <td>Arvada, CO 80002</td>
+            <td class="price">$370.00</td>
+            <td class="samples">56</td>
+            <td><a href="https://www.estatesales.net/CO/Arvada/80002/4803048" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Sports &amp; Outdoors" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Large Estate Fine Antiques<br><strong>AI Insight:</strong> R.O. Miller Denver Colorado makers mark visible on leather saddle, hand-tooled floral pattern, solid tree construction<br><strong>eBay Avg:</strong> $377.87<br><strong>eBay Range:</strong> $8.00 - $1,105.00<br><strong>Samples:</strong> 56 sold listings<br><strong>Estate Price:</strong> Not listed</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Art &amp; Decor" onclick="toggleDetail(this)">
+            <td class="rank">2</td>
+            <td>
+                <div class="item-name">Curtis Jere</div>
+                <div class="item-type">Brooklyn Bridge wall sculpture (signed, 1976)</div>
+                <span class="badge" style="background:#d946ef">AI Vision</span> <span class="badge cat-badge" style="background:#f97316">Art &amp; Decor</span>
+            </td>
+            <td>Fort Collins, CO 80524</td>
+            <td class="price">$345.00</td>
+            <td class="samples">89</td>
+            <td><a href="https://www.estatesales.net/CO/Fort-Collins/80524/4807797" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Art &amp; Decor" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Fort Collins Estate Sale With Shipping<br><strong>AI Insight:</strong> Signed Curtis Jere wall sculpture depicting Brooklyn Bridge, dated 1976 on verso, brass and copper mixed metals, excellent patina<br><strong>eBay Avg:</strong> $412.50<br><strong>eBay Range:</strong> $75.00 - $1,800.00<br><strong>Samples:</strong> 89 sold listings<br><strong>Estate Price:</strong> Not listed</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Collectibles" onclick="toggleDetail(this)">
+            <td class="rank">3</td>
+            <td>
+                <div class="item-name">Warner Bros</div>
+                <div class="item-type">vintage Looney Tunes animation cel prints</div>
+                <span class="badge" style="background:#d946ef">AI Vision</span> <span class="badge cat-badge" style="background:#8b5cf6">Collectibles</span>
+            </td>
+            <td>Lakewood, CO 80226</td>
+            <td class="price">$274.25</td>
+            <td class="samples">174</td>
+            <td><a href="https://www.estatesales.net/CO/Lakewood/80226/4812339" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Collectibles" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Eclectic Art &amp; Decor in Lovely Lakewood!!<br><strong>AI Insight:</strong> Framed Warner Bros Looney Tunes prints appear to be animation cels with studio certification seals visible<br><strong>eBay Avg:</strong> $306.77<br><strong>eBay Range:</strong> $4.99 - $1,395.00<br><strong>Samples:</strong> 174 sold listings<br><strong>Estate Price:</strong> Not listed</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Clothing &amp; Fashion" onclick="toggleDetail(this)">
+            <td class="rank">4</td>
+            <td>
+                <div class="item-name">Claude Montana</div>
+                <div class="item-type">vintage 1980s structured blazer</div>
+                <span class="badge" style="background:#22c55e">Text + Vision</span> <span class="badge cat-badge" style="background:#ec4899">Clothing &amp; Fashion</span>
+            </td>
+            <td>Lakewood, CO 80235</td>
+            <td class="price">$265.00</td>
+            <td class="samples">42</td>
+            <td><a href="https://www.estatesales.net/CO/Lakewood/80235/4807935" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Clothing &amp; Fashion" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Timeless Traditions by Grasons of SW Denver<br><strong>AI Insight:</strong> Claude Montana Paris label, power-shoulder structured blazer, pristine condition, likely early 1980s based on cut<br><strong>eBay Avg:</strong> $289.34<br><strong>eBay Range:</strong> $45.00 - $750.00<br><strong>Samples:</strong> 42 sold listings<br><strong>Estate Price:</strong> $8.00</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Home &amp; Kitchen" onclick="toggleDetail(this)">
+            <td class="rank">5</td>
+            <td>
+                <div class="item-name">Mauviel 1830</div>
+                <div class="item-type">copper cookware set (6 pieces)</div>
+                <span class="badge" style="background:#06b6d4">Text Match</span> <span class="badge cat-badge" style="background:#14b8a6">Home &amp; Kitchen</span>
+            </td>
+            <td>Colorado Springs, CO 80906</td>
+            <td class="price">$245.00</td>
+            <td class="samples">63</td>
+            <td><a href="https://www.estatesales.net/CO/Colorado-Springs/80906/4808391" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Home &amp; Kitchen" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Fantastic Mid Century Skyway Estate Sale<br><strong>AI Insight:</strong> Mauviel 1830 stamped copper saucepans and saute pan, brass handles, Made in France, stainless steel lining<br><strong>eBay Avg:</strong> $268.90<br><strong>eBay Range:</strong> $40.00 - $895.00<br><strong>Samples:</strong> 63 sold listings<br><strong>Estate Price:</strong> $45.00</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Vintage &amp; Antiques" onclick="toggleDetail(this)">
+            <td class="rank">6</td>
+            <td>
+                <div class="item-name">Vintage Military</div>
+                <div class="item-type">M-65 field jacket, olive drab</div>
+                <span class="badge" style="background:#22c55e">Text + Vision</span> <span class="badge cat-badge" style="background:#a78bfa">Vintage &amp; Antiques</span>
+            </td>
+            <td>Denver, CO 80218</td>
+            <td class="price">$225.00</td>
+            <td class="samples">210</td>
+            <td><a href="https://www.estatesales.net/CO/Denver/80218/4788696" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Vintage &amp; Antiques" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Music Notes and Downtown Antiquities!!<br><strong>AI Insight:</strong> US Army M-65 field jacket with quilted liner, contract date visible on label reads 1972, all original brass hardware<br><strong>eBay Avg:</strong> $198.45<br><strong>eBay Range:</strong> $35.00 - $550.00<br><strong>Samples:</strong> 210 sold listings<br><strong>Estate Price:</strong> $12.00</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Jewelry &amp; Watches" onclick="toggleDetail(this)">
+            <td class="rank">7</td>
+            <td>
+                <div class="item-name">Tiffany &amp; Co</div>
+                <div class="item-type">Sterling silver key pendant with chain</div>
+                <span class="badge" style="background:#d946ef">AI Vision</span> <span class="badge cat-badge" style="background:#f59e0b">Jewelry &amp; Watches</span>
+            </td>
+            <td>Fort Collins, CO 80525</td>
+            <td class="price">$189.00</td>
+            <td class="samples">175</td>
+            <td><a href="https://www.estatesales.net/CO/Fort-Collins/80525/4789980" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Jewelry &amp; Watches" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Treasures and Elegance in Fort Collins<br><strong>AI Insight:</strong> Authentic Tiffany blue pouch with sterling silver key pendant, &quot;Return to Tiffany&quot; engraving, 925 hallmark visible<br><strong>eBay Avg:</strong> $294.89<br><strong>eBay Range:</strong> $5.42 - $2,500.00<br><strong>Samples:</strong> 175 sold listings<br><strong>Estate Price:</strong> $15.00</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Clothing &amp; Fashion" onclick="toggleDetail(this)">
+            <td class="rank">8</td>
+            <td>
+                <div class="item-name">Patagonia</div>
+                <div class="item-type">vintage Synchilla snap-T fleece pullover</div>
+                <span class="badge" style="background:#06b6d4">Text Match</span> <span class="badge cat-badge" style="background:#ec4899">Clothing &amp; Fashion</span>
+            </td>
+            <td>Littleton, CO 80122</td>
+            <td class="price">$165.00</td>
+            <td class="samples">312</td>
+            <td><a href="https://www.estatesales.net/CO/Littleton/80122/4812420" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Clothing &amp; Fashion" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Smells Like an Amazing Sale!!<br><strong>AI Insight:</strong> Vintage Patagonia Synchilla snap-T in tribal print pattern, size L, Made in USA label, excellent condition<br><strong>eBay Avg:</strong> $152.30<br><strong>eBay Range:</strong> $25.00 - $450.00<br><strong>Samples:</strong> 312 sold listings<br><strong>Estate Price:</strong> $5.00</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Collectibles" onclick="toggleDetail(this)">
+            <td class="rank">9</td>
+            <td>
+                <div class="item-name">Magic: The Gathering</div>
+                <div class="item-type">card binder with rares and foils</div>
+                <span class="badge" style="background:#06b6d4">Text Match</span> <span class="badge cat-badge" style="background:#8b5cf6">Collectibles</span>
+            </td>
+            <td>Arvada, CO 80002</td>
+            <td class="price">$155.00</td>
+            <td class="samples">94</td>
+            <td><a href="https://www.estatesales.net/CO/Arvada/80002/4813647" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Collectibles" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> EVERYTHING MUST GO - ONE WEEKEND ONLY<br><strong>AI Insight:</strong> Binder of Magic: The Gathering cards visible in photos, several foil rares and mythics spotted including older sets<br><strong>eBay Avg:</strong> $178.20<br><strong>eBay Range:</strong> $5.00 - $1,200.00<br><strong>Samples:</strong> 94 sold listings<br><strong>Estate Price:</strong> $10.00</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Jewelry &amp; Watches" onclick="toggleDetail(this)">
+            <td class="rank">10</td>
+            <td>
+                <div class="item-name">Native American</div>
+                <div class="item-type">turquoise and silver squash blossom necklace</div>
+                <span class="badge" style="background:#d946ef">AI Vision</span> <span class="badge cat-badge" style="background:#f59e0b">Jewelry &amp; Watches</span>
+            </td>
+            <td>Fort Collins, CO 80525</td>
+            <td class="price">$148.50</td>
+            <td class="samples">128</td>
+            <td><a href="https://www.estatesales.net/CO/Fort-Collins/80525/4789980" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Jewelry &amp; Watches" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Treasures and Elegance in Fort Collins<br><strong>AI Insight:</strong> Navajo-style squash blossom necklace, appears to be sterling silver with genuine turquoise stones, substantial weight<br><strong>eBay Avg:</strong> $185.70<br><strong>eBay Range:</strong> $18.00 - $950.00<br><strong>Samples:</strong> 128 sold listings<br><strong>Estate Price:</strong> $25.00</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Electronics" onclick="toggleDetail(this)">
+            <td class="rank">11</td>
+            <td>
+                <div class="item-name">Porsche</div>
+                <div class="item-type">Charge-O-Mat battery charger/conditioner</div>
+                <span class="badge" style="background:#d946ef">AI Vision</span> <span class="badge cat-badge" style="background:#3b82f6">Electronics</span>
+            </td>
+            <td>Fort Collins, CO 80524</td>
+            <td class="price">$135.00</td>
+            <td class="samples">37</td>
+            <td><a href="https://www.estatesales.net/CO/Fort-Collins/80524/4807797" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Electronics" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Fort Collins Estate Sale With Shipping<br><strong>AI Insight:</strong> Porsche Charge-O-Mat Plus battery charger, branded with Porsche crest, appears complete with cables and manual<br><strong>eBay Avg:</strong> $142.60<br><strong>eBay Range:</strong> $45.00 - $280.00<br><strong>Samples:</strong> 37 sold listings<br><strong>Estate Price:</strong> Not listed</div>
+            </td>
+        </tr>
+
+        <tr class="main-row" data-cat="Sports &amp; Outdoors" onclick="toggleDetail(this)">
+            <td class="rank">12</td>
+            <td>
+                <div class="item-name">The North Face</div>
+                <div class="item-type">vintage 1996 Nuptse 700 puffer jacket</div>
+                <span class="badge" style="background:#22c55e">Text + Vision</span> <span class="badge cat-badge" style="background:#22c55e">Sports &amp; Outdoors</span>
+            </td>
+            <td>Denver, CO 80231</td>
+            <td class="price">$128.00</td>
+            <td class="samples">245</td>
+            <td><a href="https://www.estatesales.net/CO/Denver/80231/4766037" target="_blank" rel="noopener">View Sale</a></td>
+        </tr>
+        <tr class="detail-row" data-cat="Sports &amp; Outdoors" style="display:none">
+            <td colspan="6">
+                <div class="detail"><strong>Sale:</strong> Fun Sale in Denver<br><strong>AI Insight:</strong> North Face 1996 Retro Nuptse jacket in black, 700 fill down, embroidered logo, size XL, minimal wear<br><strong>eBay Avg:</strong> $145.80<br><strong>eBay Range:</strong> $40.00 - $350.00<br><strong>Samples:</strong> 245 sold listings<br><strong>Estate Price:</strong> $10.00</div>
+            </td>
+        </tr>
+
+</tbody>
+</table>
+<div class="no-results" id="no-results" style="display:none">No items match your filters.</div>
+
+<div class="footer">
+  Estate Sale Arbitrage Scanner &mdash; AI-powered scouting with eBay price cross-referencing
+</div>
+
+<script>
+let activeCat='all', searchTerm='';
+
+function toggleDetail(row){
+  const detail=row.nextElementSibling;
+  detail.style.display=detail.style.display==='none'?'table-row':'none';
+}
+
+function filterCat(btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeCat=btn.dataset.cat;
+  applyFilters();
+}
+
+function searchFilter(val){
+  searchTerm=val.toLowerCase();
+  applyFilters();
+}
+
+function applyFilters(){
+  const rows=document.querySelectorAll('.main-row');
+  let visible=0;
+  rows.forEach(row=>{
+    const detail=row.nextElementSibling;
+    const cat=row.dataset.cat;
+    const text=row.innerText.toLowerCase();
+    const catMatch=activeCat==='all'||cat===activeCat;
+    const searchMatch=!searchTerm||text.includes(searchTerm);
+    const show=catMatch&&searchMatch;
+    row.style.display=show?'':'none';
+    detail.style.display='none';
+    if(show)visible++;
+  });
+  document.getElementById('no-results').style.display=visible?'none':'block';
+}
+</script>
+</body>
+</html>
